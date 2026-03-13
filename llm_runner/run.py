@@ -56,7 +56,7 @@ def main() -> int:
     ap.add_argument(
         "--login-only",
         action="store_true",
-        help="Open site for login/verification only, wait for prompt box, then close.",
+        help="Open site for login/verification only and wait until you close the browser window.",
     )
     ap.add_argument(
         "--login-timeout-seconds",
@@ -89,12 +89,28 @@ def main() -> int:
             try:
                 site = build_site(site_name, driver)
                 site.open()
-                # If open() returned, prompt textbox was detected.
-                # Keep the window open briefly so user can see it's ready.
-                time.sleep(2.0)
-                print(f"Login ready for site={site_name}. Closing browser.")
+                print(
+                    f"Login-only mode: site={site_name} is open.\n"
+                    "Complete login/verification in the browser, then CLOSE the browser window to finish."
+                )
+
+                start = time.time()
+                while True:
+                    # If user closed the browser window, driver calls will fail; then we exit.
+                    try:
+                        _ = driver.title
+                    except Exception:
+                        break
+
+                    if (time.time() - start) > float(args.login_timeout_seconds):
+                        print("Login-only timeout reached; closing browser.")
+                        break
+                    time.sleep(1.0)
             finally:
-                driver.quit()
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
             continue
 
         use_fresh = True
