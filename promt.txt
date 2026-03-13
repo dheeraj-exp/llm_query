@@ -1,0 +1,15 @@
+Need to create selenium autmoation script using python. 
+
+We need to parse a query.csv which has CSV format where first value is a string need to be searched which will have %s in the first field , it should be replaced by multiple values post that field in first line of CSV. 
+
+Example :
+The temparature in %s may , India, SriLanka, Pakistan,
+
+Now our search queries should be The temparature in India may, The temparture in SriLanka may etc. Generate this and store generated_queries.csv
+ 
+it hould allow multiple websites for the same.
+our first implementation is chatgp which will have same argument 
+
+1) For chatgpt it should open www.chatgpt.com and look for input box <div contenteditable="true" translate="no" class="ProseMirror" id="prompt-textarea" data-virtualkeyboard="true" role="textbox" aria-multiline="true"><p data-placeholder="Ask anything" class="placeholder"><br class="ProseMirror-trailingBreak"></p></div>
+
+
