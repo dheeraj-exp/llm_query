@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -17,6 +16,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 
 @dataclass(frozen=True)
 class DriverConfig:
+    driver_kind: Literal["uc", "selenium"]
     headless: bool
     profile_dir: Path
     window_width: int = 1280
@@ -24,7 +24,7 @@ class DriverConfig:
     implicit_wait_s: float = 0.0
 
 
-def build_chrome_driver(cfg: DriverConfig) -> webdriver.Chrome:
+def _common_chrome_options(cfg: DriverConfig) -> ChromeOptions:
     cfg.profile_dir.mkdir(parents=True, exist_ok=True)
 
     opts = ChromeOptions()
@@ -37,13 +37,31 @@ def build_chrome_driver(cfg: DriverConfig) -> webdriver.Chrome:
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--lang=en-US")
     opts.add_argument(f"--user-data-dir={str(cfg.profile_dir)}")
+    opts.add_argument("--disable-blink-features=AutomationControlled")
+    return opts
 
-    # reduce automation flags (doesn't bypass auth; just stabilizes UI)
-    opts.add_experimental_option("excludeSwitches", ["enable-automation"])
-    opts.add_experimental_option("useAutomationExtension", False)
 
-    service = ChromeService(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=opts)
+def build_chrome_driver(cfg: DriverConfig) -> webdriver.Chrome:
+    opts = _common_chrome_options(cfg)
+
+    if cfg.driver_kind == "uc":
+        try:
+            import undetected_chromedriver as uc  # type: ignore
+        except Exception as e:
+            raise RuntimeError(
+                "undetected-chromedriver is not available. Install it or use --driver selenium."
+            ) from e
+
+        # uc manages driver internally; keep it headful for verification flows when possible.
+        driver = uc.Chrome(options=opts)
+    else:
+        # reduce automation flags (doesn't bypass auth; just stabilizes UI)
+        opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+        opts.add_experimental_option("useAutomationExtension", False)
+
+        service = ChromeService(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=opts)
+
     if cfg.implicit_wait_s:
         driver.implicitly_wait(cfg.implicit_wait_s)
     return driver

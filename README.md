@@ -28,6 +28,7 @@ Generates:
 ### Linux / macOS
 
 ```bash
+cd /home/tharun/llm_search
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -36,6 +37,7 @@ pip install -r requirements.txt
 ### Windows (PowerShell)
 
 ```powershell
+cd C:\path\to\llm_search
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -63,7 +65,7 @@ python -m llm_runner.generate_queries --input query.csv --output generated_queri
 3) Run automation (ChatGPT):
 
 ```bash
-python -m llm_runner.run --site chatgpt --queries generated_queries.csv --out responses.csv --headful
+python -m llm_runner.run --site chatgpt --queries generated_queries.csv --out responses.csv --headful --driver uc --delay-min-seconds 30 --delay-max-seconds 90
 ```
 
 ### First-time ChatGPT login
@@ -71,6 +73,24 @@ python -m llm_runner.run --site chatgpt --queries generated_queries.csv --out re
 ChatGPT requires authentication. The runner uses a persistent browser profile directory (`.browser_profiles/chatgpt`) so you login once, then future runs reuse the session.
 
 If you see the login page, complete login manually in the opened browser window; the script will continue once the prompt box is detected.
+
+### Login-only mode
+
+Open ChatGPT so you can login/complete verification, then close once the prompt box is detected:
+
+```bash
+python -m llm_runner.run --site chatgpt --login-only --headful --driver uc
+```
+
+### Human verification / CAPTCHA
+
+ChatGPT may show a “human verification” step. Using `undetected-chromedriver` can reduce this, but it **cannot guarantee bypassing** verification.
+
+Best practice:
+
+- Run **headful** (`--headful`) for the first run
+- Complete verification once
+- Re-run using the same profile directory so the session persists
 
 ## Notes
 
