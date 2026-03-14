@@ -34,12 +34,12 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Windows (PowerShell)
+### Windows (cmd , You can get using Win + R , then type cmd)
 
 ```powershell
 cd C:\path\to\llm_search
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+py -3.11 -m venv .venv
+.\.venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
